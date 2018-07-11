@@ -1,0 +1,22 @@
+{
+  "name": "tez-deploy",
+  "version": "1.0.0",
+  "description": "Online contract deployer for Tezos",
+  "scripts": {
+    "dev": "nuxt",
+    "gen": "nuxt generate && rm -rf ./_nuxt && cp -r ./dist/* ./ && rm -rf ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catsigma/tez-deploy.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/catsigma/tez-deploy/issues"
+  },
+  "homepage": "https://github.com/catsigma/tez-deploy#readme",
+  "devDependencies": {
+    "nuxt": "^1.4.1"
+  }
+}
