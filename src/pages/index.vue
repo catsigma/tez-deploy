@@ -120,8 +120,8 @@
 textarea { font-family: consolas, monospace; width: 100%; height: 300px; padding: 8px;}
 .option {line-height: 2}
 .option input {margin-left: 8px;}
-.output {font-family: consolas, monospace; overflow: auto; background: #f0f0f0; padding: 8px; margin: 8px 0;}
-.error {color: red; font-family: consolas, monospace; overflow: auto; background: #f0f0f0; padding: 8px; margin: 8px 0;}
+.output {background: #e8f8dc; font-family: consolas, monospace; overflow: auto; padding: 8px; margin: 8px 0;}
+.error {background: #ffe8e8; color: red; font-family: consolas, monospace; overflow: auto;  padding: 8px; margin: 8px 0;}
 .deploy-btn {margin: 8px;}
 .clear-btn {float: right;}
 </style>
