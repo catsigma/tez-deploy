@@ -1,2 +1,2 @@
-# tez-deploy
+# tezdeploy
 Online contract deployer for Tezos
