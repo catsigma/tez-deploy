@@ -78,7 +78,7 @@
                 delegate: this.delegate ? this.delegate : undefined
               })
               .then(x => {
-                this.val_map[`CONTRACT.${name}`] = x.contracts[0]
+                this.val_map[`CONTRACT.${name}`] = [].concat.apply([], x.contracts)[0]
                 this.output = JSON.stringify(this.val_map, null, 4)
                 resolve()
               })
