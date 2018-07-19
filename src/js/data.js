@@ -1,3 +1,4 @@
 export const G = {
-  admin: ''
+  admin: '',
+  deployed_contracts: {}
 }
