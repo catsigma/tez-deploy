@@ -14,8 +14,7 @@
         batch_tx_map: {},
         spendable: false,
         delegatable: true,
-        delegate: '',
-        single_op: true
+        delegate: ''
       }
     },
     methods: {
@@ -54,45 +53,30 @@
           this.g.admin = admin
         })
 
-        if (this.single_op) {
+        transfer_lst.forEach((transaction, index) => {
           p = p.then(() => {
-            return tezbridge({
-              method: 'operations',
-              operations: transfer_lst.map(transaction => {
-                return {
-                  method: 'transfer', 
-                  amount: transaction.amount || 0,
-                  destination: this.objReplace(transaction.destination, contracts),
-                  parameters: JSON.parse(this.objReplace(JSON.stringify(transaction.parameters), contracts))
-                }
+            return new Promise((resolve, reject) => setTimeout(() => {
+              tezbridge({
+                method: 'operations',
+                operations: transaction.items.map(x => {
+                  return {
+                    method: 'transfer',
+                    amount: x.amount || 0,
+                    destination: this.objReplace(x.destination, contracts),
+                    parameters: JSON.parse(this.objReplace(JSON.stringify(x.parameters), contracts))
+                  }
+                })
               })
-            })
-            .then(x => {
-              this.batch_tx_map[`all`] = true
-              this.output = JSON.stringify(this.batch_tx_map, null, 4)
-            })
-          })
-        } else {
-          transfer_lst.forEach((transaction, index) => {
-            p = p.then(() => {
-              return new Promise((resolve, reject) => setTimeout(() => {
-                tezbridge({
-                  method: 'transfer', 
-                  amount: transaction.amount || 0,
-                  destination: this.objReplace(transaction.destination, contracts),
-                  parameters: JSON.parse(this.objReplace(JSON.stringify(transaction.parameters), contracts))
-                })
-                .then(x => {
-                  this.batch_tx_map[`tx(${transaction.name || index})`] = true
-                  this.output = JSON.stringify(this.batch_tx_map, null, 4)
-                  resolve()
-                })
-                .catch(err => reject(err))
+              .then(x => {
+                this.batch_tx_map[`tx(${transaction.name || index})`] = true
+                this.output = JSON.stringify(this.batch_tx_map, null, 4)
+                resolve()
+              })
+              .catch(err => reject(err))
 
-              }, this.timer()))
-            })
+            }, this.timer()))
           })
-        }
+        })
 
         p.then(() => {
           this.output = JSON.stringify(this.batch_tx_map, null, 4)
@@ -181,7 +165,6 @@
       <label><span>delegate:</span> <input v-model="delegate" /></label> <br> 
       <label><span>Transaction interval:</span> <input v-model="interval" />s</label> <br> 
       <label>Transaction countdown: {{this.countdown}}s</label> <br> 
-      <label><span>single operation for batch transfer:</span> <input type="checkbox" v-model="single_op" /></label> <br> 
     </div>
     <button @click="tryDeploy(true)">Check</button>
     <button @click="tryDeploy(false)">Deploy</button>
