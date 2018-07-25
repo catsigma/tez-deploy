@@ -63,6 +63,7 @@
                     method: 'transfer',
                     amount: x.amount || 0,
                     fee: x.fee || 0,
+                    gas_limit: x.gas_limit || "400000",
                     destination: this.objReplace(x.destination, contracts),
                     parameters: JSON.parse(this.objReplace(JSON.stringify(x.parameters), contracts))
                   }
