@@ -62,6 +62,7 @@
                   return {
                     method: 'transfer',
                     amount: x.amount || 0,
+                    fee: x.fee || 0,
                     destination: this.objReplace(x.destination, contracts),
                     parameters: JSON.parse(this.objReplace(JSON.stringify(x.parameters), contracts))
                   }
