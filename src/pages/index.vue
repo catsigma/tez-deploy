@@ -147,7 +147,8 @@
 
         p.then(() => {
           this.output = JSON.stringify(this.val_map, null, 4)
-
+          this.batch_tx_map = {}
+          
           if (!no_injection)
             this.g.deployed_contracts = JSON.parse(this.output)
         }).catch(err => {
