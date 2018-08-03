@@ -5,8 +5,6 @@
     data() {
       return {
         g: G,
-        interval: 45,
-        countdown: 0,
         content: '',
         output: '',
         error: '',
@@ -18,15 +16,6 @@
       }
     },
     methods: {
-      timer() {
-        this.countdown = this.interval
-        const t = setInterval(() => {
-          this.countdown -= 1
-          if (this.countdown === 0)
-            clearInterval(t)
-        }, 1000)
-        return this.interval * 1000
-      },
       replace(content, replacement) {
         return this.objReplace(content, replacement, this.val_map)
       },
@@ -55,33 +44,49 @@
 
         transfer_lst.forEach((transaction, index) => {
           p = p.then(() => {
-            return new Promise((resolve, reject) => setTimeout(() => {
-              tezbridge({
-                method: 'operations',
-                operations: transaction.items.map(x => {
-                  return {
-                    method: 'transfer',
-                    amount: x.amount || 0,
-                    fee: x.fee || 0,
-                    gas_limit: x.gas_limit || "400000",
-                    destination: this.objReplace(x.destination, contracts),
-                    parameters: JSON.parse(this.objReplace(JSON.stringify(x.parameters), contracts))
-                  }
-                })
-              })
-              .then(x => {
-                this.batch_tx_map[`tx(${transaction.name || index})`] = true
-                this.output = JSON.stringify(this.batch_tx_map, null, 4)
-                resolve()
-              })
-              .catch(err => reject(err))
 
-            }, this.timer()))
+            return tezbridge({
+              method: 'operations',
+              operations: transaction.items.map(x => {
+                return {
+                  method: 'transfer',
+                  amount: x.amount || 0,
+                  fee: x.fee || 0,
+                  gas_limit: x.gas_limit || "400000",
+                  destination: this.objReplace(x.destination, contracts),
+                  parameters: JSON.parse(this.objReplace(JSON.stringify(x.parameters), contracts))
+                }
+              })
+            })
+            .then(x => {
+              this.batch_tx_map[`tx(${transaction.name || index})`] = x.operation_id
+              this.output = JSON.stringify(this.batch_tx_map, null, 4)
+
+              return new Promise((resolve, reject) => {
+                const t = setInterval(() => {
+                  tezbridge({
+                    method: 'head_custom',
+                    path: '/operation_hashes'
+                  })
+                  .then(data => {
+                    if (data.toString().indexOf(x.operation_id) > -1) {
+                      clearInterval(t)
+                      resolve()
+                    }
+                  })
+                  .catch(err => {
+                    clearInterval(t)
+                    reject(err)
+                  })
+                }, 15 * 1000)
+              })
+            })
+            
           })
         })
 
         p.then(() => {
-          this.output = JSON.stringify(this.batch_tx_map, null, 4)
+          this.output = 'DONE!\n' + JSON.stringify(this.batch_tx_map, null, 4)
         }).catch(err => {
           this.error = err instanceof Error ? err.stack : err
         })
@@ -114,39 +119,54 @@
 
         order.forEach(name => {
           p = p.then(() => {
-            return new Promise((resolve, reject) => setTimeout(() => {
-              const script_raw = JSON.stringify(contracts[name].script)
-              const storage_raw = JSON.stringify(contracts[name].storage)
 
-              const code = JSON.parse(this.replace(script_raw, replacement))
-              const storage = JSON.parse(this.replace(storage_raw, replacement))
+            const script_raw = JSON.stringify(contracts[name].script)
+            const storage_raw = JSON.stringify(contracts[name].storage)
 
-              tezbridge({
-                method: 'originate', 
-                no_injection,
-                balance: 0,
-                script: {
-                  code,
-                  storage
-                },
-                spendable: this.spendable,
-                delegatable: this.delegatable,
-                delegate: this.delegate ? this.delegate : undefined
+            const code = JSON.parse(this.replace(script_raw, replacement))
+            const storage = JSON.parse(this.replace(storage_raw, replacement))
+
+            return tezbridge({
+              method: 'originate', 
+              no_injection,
+              balance: 0,
+              script: {
+                code,
+                storage
+              },
+              spendable: this.spendable,
+              delegatable: this.delegatable,
+              delegate: this.delegate ? this.delegate : undefined
+            })
+            .then(x => {
+              this.val_map[`CONTRACT.${name}`] = [].concat.apply([], x.contracts)[0]
+              this.output = JSON.stringify(this.val_map, null, 4)
+
+              return new Promise((resolve, reject) => {
+                const t = setInterval(() => {
+                  tezbridge({
+                    method: 'head_custom',
+                    path: '/operation_hashes'
+                  })
+                  .then(data => {
+                    if (data.toString().indexOf(x.operation_id) > -1) {
+                      clearInterval(t)
+                      resolve()
+                    }
+                  })
+                  .catch(err => {
+                    clearInterval(t)
+                    reject(err)
+                  })
+                }, 15 * 1000)
               })
-              .then(x => {
-                this.val_map[`CONTRACT.${name}`] = [].concat.apply([], x.contracts)[0]
-                this.output = JSON.stringify(this.val_map, null, 4)
-                resolve()
-              })
-              .catch(err => reject(err))
-
-            }, no_injection ? 0 : this.timer()))
+            })
 
           })
         })
 
         p.then(() => {
-          this.output = JSON.stringify(this.val_map, null, 4)
+          this.output = 'DONE!\n' + JSON.stringify(this.val_map, null, 4)
           this.batch_tx_map = {}
           
           if (!no_injection)
@@ -166,8 +186,6 @@
       <label><span>spendable:</span> <input type="checkbox" v-model="spendable" /></label> <br>
       <label><span>delegatable:</span> <input type="checkbox" v-model="delegatable" /></label> <br>
       <label><span>delegate:</span> <input v-model="delegate" /></label> <br> 
-      <label><span>Transaction interval:</span> <input v-model="interval" />s</label> <br> 
-      <label>Transaction countdown: {{this.countdown}}s</label> <br> 
     </div>
     <button @click="tryDeploy(true)">Check</button>
     <button @click="tryDeploy(false)">Deploy</button>
