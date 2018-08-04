@@ -63,13 +63,14 @@
               this.output = JSON.stringify(this.batch_tx_map, null, 4)
 
               return new Promise((resolve, reject) => {
+                let count = 0
                 const t = setInterval(() => {
                   tezbridge({
                     method: 'head_custom',
                     path: '/operation_hashes'
                   })
                   .then(data => {
-                    if (data.toString().indexOf(x.operation_id) > -1) {
+                    if (data.toString().indexOf(x.operation_id) > -1 || count++ > 4) {
                       clearInterval(t)
                       resolve()
                     }
@@ -143,13 +144,14 @@
               this.output = JSON.stringify(this.val_map, null, 4)
 
               return new Promise((resolve, reject) => {
+                let count = 0
                 const t = setInterval(() => {
                   tezbridge({
                     method: 'head_custom',
                     path: '/operation_hashes'
                   })
                   .then(data => {
-                    if (data.toString().indexOf(x.operation_id) > -1) {
+                    if (data.toString().indexOf(x.operation_id) > -1 || count++ > 4) {
                       clearInterval(t)
                       resolve()
                     }
