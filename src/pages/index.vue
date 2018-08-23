@@ -15,7 +15,16 @@
         delegate: ''
       }
     },
+    watch: {
+    },
     methods: {
+      select_file(e) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.content = e.target.result
+        }
+        reader.readAsText(e.target.files[0])
+      },
       replace(content, replacement) {
         return this.objReplace(content, replacement, this.val_map)
       },
@@ -184,6 +193,8 @@
 <template>
   <div>
     <textarea placeholder="input deployment or transaction JSON here" v-model="content"></textarea>
+    <div class="splitter">OR</div>
+    <input type="file" @change="select_file" />
     <div class="option">
       <label><span>spendable:</span> <input type="checkbox" v-model="spendable" /></label> <br>
       <label><span>delegatable:</span> <input type="checkbox" v-model="delegatable" /></label> <br>
