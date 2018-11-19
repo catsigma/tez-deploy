@@ -12,6 +12,7 @@
         batch_tx_map: {},
         spendable: false,
         delegatable: true,
+        balance: 0,
         delegate: ''
       }
     },
@@ -139,7 +140,7 @@
             return tezbridge({
               method: 'originate', 
               no_injection,
-              balance: 0,
+              balance: this.balance || 0,
               script: {
                 code,
                 storage
@@ -196,6 +197,7 @@
     <div class="splitter">OR</div>
     <input type="file" @change="select_file" />
     <div class="option">
+      <label><span>balance:</span> <input v-model.number="balance" /></label> <br>
       <label><span>spendable:</span> <input type="checkbox" v-model="spendable" /></label> <br>
       <label><span>delegatable:</span> <input type="checkbox" v-model="delegatable" /></label> <br>
       <label><span>delegate:</span> <input v-model="delegate" /></label> <br> 
