@@ -31,7 +31,7 @@
       },
       objReplace(content, replacement, mapping_obj) {
         return content.replace(new RegExp(Object.keys(replacement).join('|'), 'g'), m => {
-          return mapping_obj ? mapping_obj[replacement[m]] : replacement[m]
+          return mapping_obj ? (mapping_obj[replacement[m]] || replacement[m]) : replacement[m]
         })
       },
       tryBatchTransfer() {
